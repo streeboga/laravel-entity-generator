@@ -4,37 +4,50 @@ declare(strict_types=1);
 
 namespace {{namespace}};
 
+{{#find}}
 use {{model_fqcn}};
+{{/find}}
 use {{user_fqcn}};
 use Illuminate\Auth\Access\Response;
 
 /** {{Name}}: {{#user}}видит и меняет владелец, чужое — 404.{{/user}}{{^user}}TODO: ограничить доступ — сейчас пускает любого аутентифицированного.{{/user}} */
 final class {{class}}
 {
+{{#index}}
     public function viewAny({{user_class}} $user): Response
     {
         return Response::allow();
     }
+{{/index}}
+{{#show}}
 
     public function view({{user_class}} $user, {{model_class}} $item): Response
     {
         return $this->owns($user, $item);
     }
+{{/show}}
+{{#store}}
 
     public function create({{user_class}} $user): Response
     {
         return Response::allow();
     }
+{{/store}}
+{{#update}}
 
     public function update({{user_class}} $user, {{model_class}} $item): Response
     {
         return $this->owns($user, $item);
     }
+{{/update}}
+{{#destroy}}
 
     public function delete({{user_class}} $user, {{model_class}} $item): Response
     {
         return $this->owns($user, $item);
     }
+{{/destroy}}
+{{#find}}
 
     private function owns({{user_class}} $user, {{model_class}} $item): Response
     {
@@ -45,4 +58,5 @@ final class {{class}}
         return Response::allow();
 {{/user}}
     }
+{{/find}}
 }

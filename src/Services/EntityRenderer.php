@@ -109,7 +109,7 @@ final readonly class EntityRenderer
             'user_fqcn' => $user, 'user_class' => class_basename($user),
             'json_api_resource' => $cfg['json_api']['resource'], 'json_api_collection' => $cfg['json_api']['collection'],
             'public_id' => $spec->publicId ?? '', 'public_column' => $spec->publicId !== null ? "\$table->string('public_id', 40)->unique();" : '',
-            'soft_column' => $feature['column'], 'builder' => $spec->builder, 'policy' => $spec->policy,
+            'soft_column' => $feature['column'], 'builder' => $spec->builder && $spec->has('index'), 'policy' => $spec->policy,
             'user' => $owner['kind'] === 'user', 'tenant' => $owner['kind'] === 'tenant',
             'perm_view' => (string) ($spec->permissions['view'] ?? ''), 'perm_manage' => (string) ($spec->permissions['manage'] ?? ''),
             'columns' => $col($frag, 'column'),
@@ -128,6 +128,12 @@ final readonly class EntityRenderer
         foreach (['index', 'show', 'store', 'update', 'destroy'] as $action) {
             $vars[$action] = $spec->has($action);
         }
+        // Составные условия стабов (в секциях нет «или»): метод без вызывающего не штампуется.
+        $vars['find'] = $spec->has('show') || $spec->has('update') || $spec->has('destroy');
+        $vars['owner_used'] = $vars['user'] && ($spec->has('index') || $spec->has('store'));
+        $vars['gate_model'] = $spec->policy && ($spec->has('index') || $spec->has('store'));
+        $vars['model_used'] = $vars['find'] || $vars['gate_model'];
+        $vars['response_used'] = $spec->has('store') || $spec->has('destroy');
         foreach ($cfg['layers'] as $layer => $def) {
             $info = $def['kind'] ?? null ? null : $this->layout->info($spec, $layer);
             if ($layer === 'factory') {

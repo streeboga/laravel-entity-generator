@@ -12,10 +12,12 @@ use {{dto_create_fqcn}};
 {{#update}}
 use {{dto_update_fqcn}};
 {{/update}}
+{{#index}}
 use Illuminate\Database\Eloquent\Collection;
-{{#user}}
+{{/index}}
+{{#owner_used}}
 use {{user_fqcn}};
-{{/user}}
+{{/owner_used}}
 
 /** {{Names}}: список, чтение и запись через репозиторий. */
 final readonly class {{class}}
@@ -37,11 +39,13 @@ final readonly class {{class}}
     }
 {{/user}}
 {{/index}}
+{{#find}}
 
     public function find(string $key): ?{{model_class}}
     {
         return $this->items->find($key);
     }
+{{/find}}
 {{#store}}
 
 {{#user}}

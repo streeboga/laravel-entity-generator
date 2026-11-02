@@ -42,6 +42,49 @@ it('выключенное действие убирает метод, запр�
         ->and(file_exists($this->sandbox.'/app/DataTransferObjects/Notes/CreateNoteData.php'))->toBeFalse();
 });
 
+it('--actions=index,show: ни реквестов, ни DTO, ни create/update/delete в слоях, билдера нет', function (): void {
+    $this->artisan('make:entity', ['name' => 'Note', '--fields' => 'body:text:required', '--owner' => 'user', '--actions' => 'index,show', '--routes' => true])->assertSuccessful();
+
+    expect(file_exists($this->sandbox.'/app/Http/Requests/Notes/StoreNoteRequest.php'))->toBeFalse()
+        ->and(file_exists($this->sandbox.'/app/Http/Requests/Notes/UpdateNoteRequest.php'))->toBeFalse()
+        ->and(glob($this->sandbox.'/app/DataTransferObjects/Notes/*'))->toBe([])
+        ->and(glob($this->sandbox.'/app/Builders/*'))->toBe([]);
+
+    foreach (['Services/NoteService', 'Repositories/NoteRepository', 'Http/Controllers/Api/V1/NoteController', 'Policies/NotePolicy'] as $path) {
+        $code = file_get_contents($this->sandbox.'/app/'.$path.'.php');
+        expect($code)->not->toMatch('/function (create|update|delete|store|destroy)\(/', $path)->not->toContain('Create')->not->toContain('JsonResponse');
+    }
+    $routes = file_get_contents($this->sandbox.'/routes/api.php');
+    expect($routes)->toContain("notes.index")->toContain("notes.show")->not->toContain("notes.store")->not->toContain("notes.update")->not->toContain("notes.destroy");
+    foreach ($this->phpFiles() as $file) {
+        exec('php -l '.escapeshellarg($file).' 2>&1', $out, $code);
+        expect($code)->toBe(0, $file.' '.implode("\n", $out));
+    }
+});
+
+it('--actions=index: find нет ни в репозитории, ни в сервисе, ни в контроллере', function (): void {
+    $this->artisan('make:entity', ['name' => 'Note', '--fields' => 'body:text:required', '--actions' => 'index'])->assertSuccessful();
+
+    foreach (['Services/NoteService', 'Repositories/NoteRepository', 'Http/Controllers/Api/V1/NoteController', 'Policies/NotePolicy'] as $path) {
+        expect(file_get_contents($this->sandbox.'/app/'.$path.'.php'))->not->toContain('function find')->not->toContain('function view(');
+    }
+});
+
+it('QueryBuilder только по --builder', function (): void {
+    $this->artisan('make:entity', ['name' => 'Note', '--fields' => 'body:text:required'])->assertSuccessful();
+    expect(glob($this->sandbox.'/app/Builders/*'))->toBe([])
+        ->and(file_get_contents($this->sandbox.'/app/Repositories/NoteRepository.php'))->not->toContain('QueryBuilder');
+
+    $this->artisan('make:entity', ['name' => 'Memo', '--fields' => 'body:text:required', '--builder' => true])->assertSuccessful();
+    expect(file_exists($this->sandbox.'/app/Builders/MemoQueryBuilder.php'))->toBeTrue()
+        ->and(file_get_contents($this->sandbox.'/app/Repositories/MemoRepository.php'))->toContain('MemoQueryBuilder');
+});
+
+it('без действий или с неизвестным действием — отказ', function (): void {
+    $this->artisan('make:entity', ['name' => 'Note', '--fields' => 'body:text', '--actions' => 'index,fly'])->assertFailed();
+    $this->artisan('make:entity', ['name' => 'Note', '--fields' => 'body:text', '--actions' => ','])->assertFailed();
+});
+
 it('--test-first создаёт только тест', function (): void {
     $this->artisan('make:entity', ['name' => 'Note', '--fields' => 'body:text:required', '--test-first' => true])->assertSuccessful();
 
@@ -82,4 +125,19 @@ it('предупреждает, когда слой пакета тянет за
     config()->set('entity-generator.user_model', 'App\\Models\\Person');
     $this->artisan('make:entity', ['name' => 'Note', '--fields' => 'body:text', '--package' => 'pkg', '--owner' => 'user', '--dry-run' => true])
         ->expectsOutputToContain('нарушает правило цели')->assertSuccessful();
+});
+
+it('любой набор действий даёт валидный PHP', function (string $actions, string $owner, bool $builder): void {
+    $this->artisan('make:entity', ['name' => 'Note', '--fields' => 'body:text:required', '--owner' => $owner, '--actions' => $actions, '--builder' => $builder, '--routes' => true])->assertSuccessful();
+
+    foreach ($this->phpFiles() as $file) {
+        exec('php -l '.escapeshellarg($file).' 2>&1', $out, $code);
+        expect($code)->toBe(0, $file.' '.implode("\n", $out));
+    }
+})->with(function (): iterable {
+    foreach (['index', 'show', 'store', 'update', 'destroy', 'destroy,store', 'index,update', 'show,update,destroy'] as $actions) {
+        foreach (['none', 'user'] as $owner) {
+            yield "$actions/$owner" => [$actions, $owner, $owner === 'user'];
+        }
+    }
 });

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace {{namespace}};
 
+{{#model_used}}
 use {{model_fqcn}};
+{{/model_used}}
 use {{resource_fqcn}};
 use {{service_fqcn}};
 {{#store}}
@@ -13,16 +15,22 @@ use {{request_store_fqcn}};
 {{#update}}
 use {{request_update_fqcn}};
 {{/update}}
-{{#user}}
+{{#owner_used}}
 use {{user_fqcn}};
-{{/user}}
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+{{/owner_used}}
+{{#store}}
+use Illuminate\Http\JsonResponse;
+{{/store}}
+{{#response_used}}
 use Illuminate\Http\Response;
+{{/response_used}}
 {{#policy}}
 use Illuminate\Support\Facades\Gate;
 {{/policy}}
+{{#index}}
 use {{json_api_collection}};
+{{/index}}
 
 /** {{Names}}. */
 final readonly class {{class}}
@@ -107,7 +115,7 @@ final readonly class {{class}}
         return response()->noContent();
     }
 {{/destroy}}
-{{#user}}
+{{#owner_used}}
 
     private function owner(Request $request): {{user_class}}
     {
@@ -116,7 +124,8 @@ final readonly class {{class}}
 
         return $user;
     }
-{{/user}}
+{{/owner_used}}
+{{#find}}
 
     private function find(string $key, string $ability): {{model_class}}
     {
@@ -131,4 +140,5 @@ final readonly class {{class}}
 
         return $item;
     }
+{{/find}}
 }

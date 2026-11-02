@@ -62,6 +62,10 @@ final readonly class EntitySpecFactory
             }
         }
 
+        if ($actions === []) {
+            throw new InvalidArgumentException('Действий нет: укажите хотя бы одно из index, show, store, update, destroy.');
+        }
+
         $fields = [];
         foreach ([...$this->parser->parseMap((array) ($yaml['fields'] ?? [])), ...$this->parser->parseList((string) ($input['fields'] ?? ''))] as $field) {
             $fields[$field->name] = $field;

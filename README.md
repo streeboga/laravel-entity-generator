@@ -15,6 +15,12 @@ php artisan make:entity-field Invoice --add="due_at:date"      # migration + ins
 php artisan entity:prompt Invoice                              # Markdown for a frontend agent
 ```
 
+No dead code: a generated method with no caller or route does not exist.
+`--actions=index,show,store,update,destroy` (YAML key `actions:`; default — all five) limits controller, service, repository, routes,
+requests, DTOs, policy and test to the listed actions: no `store`/`update` — no requests, DTOs, `create`/`update`; no `destroy` — no `delete`;
+`find` only if `show`, `update` or `destroy` is left. The `readonly` preset is `index,show`.
+The QueryBuilder is not created by default (the repository holds plain `where`); `--builder` or `builder: true` adds it (requires `index`).
+
 Everything is config: targets (app, a package, a domain: `--target|--package|--module|--domain`), layouts (`laravel`, `ddd`, your own),
 layers, owners, presets, field types, id types. Nothing is overwritten without `--force`. `--dry-run` writes nothing.
 Stubs: `{{key}}`, own-line sections `{{#flag}}…{{/flag}}` / `{{^flag}}…{{/flag}}`; `@gen:` comments are anchors for `make:entity-field`.

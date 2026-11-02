@@ -37,12 +37,14 @@ it('{{names}}: без обязательных полей — 422', function ():
 });
 {{/store}}
 {{#user}}
-{{#show}}
+{{#find}}
 
 it('{{names}}: чужая запись — 404', function (): void {
     $foreign = {{model_class}}::factory()->create(['user_id' => $this->stranger->id]);
 
+{{#show}}
     $this->getJson('{{test_uri}}/'.$foreign->{{key_column}})->assertNotFound();
+{{/show}}
 {{#update}}
     $this->patchJson('{{test_uri}}/'.$foreign->{{key_column}}, [])->assertNotFound();
 {{/update}}
@@ -50,7 +52,7 @@ it('{{names}}: чужая запись — 404', function (): void {
     $this->deleteJson('{{test_uri}}/'.$foreign->{{key_column}})->assertNotFound();
 {{/destroy}}
 });
-{{/show}}
+{{/find}}
 {{/user}}
 {{#show}}
 

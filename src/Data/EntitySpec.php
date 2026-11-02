@@ -38,9 +38,10 @@ final readonly class EntitySpec
         return [...$this->ownerFields, ...$this->fields];
     }
 
-    public function has(string $action): bool
+    /** Включено ли действие (для списка — хотя бы одно из них). */
+    public function has(string|array $action): bool
     {
-        return in_array($action, $this->actions, true);
+        return array_intersect((array) $action, $this->actions) !== [];
     }
 
     /**

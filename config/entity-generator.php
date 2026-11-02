@@ -109,6 +109,7 @@ return [
     ],
 
     // Слои: шаблон имени класса, стаб, http — слой HTTP-части, option — включается флагом/ключом спеки,
+    // action — действие или список: слой создаётся, только если включено хоть одно из них,
     // kind — слой с особым путём (migration, factory, test).
     'layers' => [
         'model' => ['class' => '{Name}', 'stub' => 'model'],
@@ -117,11 +118,11 @@ return [
         'dto_update' => ['class' => 'Update{Name}Data', 'stub' => 'dto.update', 'action' => 'update'],
         'request_store' => ['class' => 'Store{Name}Request', 'stub' => 'request.store', 'http' => true, 'action' => 'store'],
         'request_update' => ['class' => 'Update{Name}Request', 'stub' => 'request.update', 'http' => true, 'action' => 'update'],
-        'builder' => ['class' => '{Name}QueryBuilder', 'stub' => 'builder', 'option' => 'builder'],
+        'builder' => ['class' => '{Name}QueryBuilder', 'stub' => 'builder', 'option' => 'builder', 'action' => 'index'],
         'repository' => ['class' => '{Name}Repository', 'stub' => 'repository'],
         'service' => ['class' => '{Name}Service', 'stub' => 'service'],
         'controller' => ['class' => '{Name}Controller', 'stub' => 'controller', 'http' => true],
-        'resource' => ['class' => '{Name}Resource', 'stub' => 'resource', 'http' => true],
+        'resource' => ['class' => '{Name}Resource', 'stub' => 'resource', 'http' => true, 'action' => ['index', 'show', 'store', 'update']],
         'policy' => ['class' => '{Name}Policy', 'stub' => 'policy', 'http' => true, 'option' => 'policy'],
         'migration' => ['kind' => 'migration', 'stub' => 'migration'],
         'factory' => ['kind' => 'factory', 'class' => '{Name}Factory', 'stub' => 'factory'],
