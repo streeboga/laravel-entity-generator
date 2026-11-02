@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+{{uses}}
+
+/** Данные для создания: {{Name}}. */
+final readonly class {{class}}
+{
+    public function __construct(
+        {{params}}
+        // @gen:params
+    ) {}
+
+    /** @return array<string, mixed> */
+    public function toAttributes(): array
+    {
+        return [
+            {{attrs}}
+            // @gen:attrs
+        ];
+    }
+}

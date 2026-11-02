@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+use {{model_fqcn}};
+use Illuminate\Database\Eloquent\Factories\Factory;
+{{#user}}
+use {{user_fqcn}};
+{{/user}}
+{{uses}}
+
+/** @extends Factory<{{model_class}}> */
+final class {{class}} extends Factory
+{
+    protected $model = {{model_class}}::class;
+
+    /** @return array<string, mixed> */
+    public function definition(): array
+    {
+        return [
+            {{owner_factory}}
+            {{attrs}}
+            // @gen:attrs
+        ];
+    }
+}

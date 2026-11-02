@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+use {{dto_update_fqcn}};
+use Illuminate\Foundation\Http\FormRequest;
+{{uses}}
+
+final class {{class}} extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return $this->user() !== null;
+    }
+
+    /** @return array<string, array<int, mixed>> */
+    public function rules(): array
+    {
+        return [
+            {{rules}}
+            // @gen:rules
+        ];
+    }
+
+    public function toDto(): {{dto_update_class}}
+    {
+        /** @var array<string, mixed> $data */
+        $data = $this->validated();
+
+        return new {{dto_update_class}}(
+            {{args}}
+            // @gen:args
+        );
+    }
+}

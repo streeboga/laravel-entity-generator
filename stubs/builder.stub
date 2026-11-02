@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+use {{model_fqcn}};
+use Illuminate\Database\Eloquent\Collection;
+
+/** Запросы {{Names}}: сложные выборки живут здесь, репозиторий только зовёт. */
+final class {{class}}
+{
+    /** @return Collection<int, {{model_class}}> */
+{{#user}}
+    public function forOwner(int $ownerId): Collection
+    {
+        return {{model_class}}::query()->where('user_id', $ownerId)->latest('id')->get();
+    }
+{{/user}}
+{{^user}}
+    public function latest(): Collection
+    {
+        return {{model_class}}::query()->latest('id')->get();
+    }
+{{/user}}
+}

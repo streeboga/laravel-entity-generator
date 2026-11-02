@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+use {{model_fqcn}};
+use {{repository_fqcn}};
+{{#store}}
+use {{dto_create_fqcn}};
+{{/store}}
+{{#update}}
+use {{dto_update_fqcn}};
+{{/update}}
+use Illuminate\Database\Eloquent\Collection;
+{{#user}}
+use {{user_fqcn}};
+{{/user}}
+
+/** {{Names}}: список, чтение и запись через репозиторий. */
+final readonly class {{class}}
+{
+    public function __construct(private {{repository_class}} $items) {}
+{{#index}}
+
+    /** @return Collection<int, {{model_class}}> */
+{{#user}}
+    public function list({{user_class}} $user): Collection
+    {
+        return $this->items->forOwner((int) $user->id);
+    }
+{{/user}}
+{{^user}}
+    public function list(): Collection
+    {
+        return $this->items->all();
+    }
+{{/user}}
+{{/index}}
+
+    public function find(string $key): ?{{model_class}}
+    {
+        return $this->items->find($key);
+    }
+{{#store}}
+
+{{#user}}
+    public function create({{user_class}} $user, {{dto_create_class}} $data): {{model_class}}
+    {
+        return $this->items->create($data->toAttributes() + ['user_id' => $user->id]);
+    }
+{{/user}}
+{{^user}}
+    public function create({{dto_create_class}} $data): {{model_class}}
+    {
+        return $this->items->create($data->toAttributes());
+    }
+{{/user}}
+{{/store}}
+{{#update}}
+
+    public function update({{model_class}} $item, {{dto_update_class}} $data): {{model_class}}
+    {
+        return $this->items->update($item, $data->toChanges());
+    }
+{{/update}}
+{{#destroy}}
+
+    public function delete({{model_class}} $item): void
+    {
+        $this->items->delete($item);
+    }
+{{/destroy}}
+}

@@ -1,0 +1,70 @@
+<?php
+
+declare(strict_types=1);
+
+use {{model_fqcn}};
+use {{user_fqcn}};
+use Laravel\Sanctum\Sanctum;
+
+/** {{Name}}: действия сущности и чужое = 404. Сгенерировано make:entity. */
+beforeEach(function (): void {
+    $this->owner = {{user_class}}::factory()->create();
+    $this->stranger = {{user_class}}::factory()->create();
+    Sanctum::actingAs($this->owner);
+});
+{{#index}}
+
+it('{{names}}: список отдаёт свои записи', function (): void {
+    {{model_class}}::factory(){{#user}}->create(['user_id' => $this->owner->id]){{/user}}{{^user}}->create(){{/user}};
+
+    $this->getJson('{{test_uri}}')->assertOk()->assertJsonCount(1, 'data');
+});
+{{/index}}
+{{#store}}
+
+it('{{names}}: создаёт запись', function (): void {
+    $response = $this->postJson('{{test_uri}}', [
+        {{sample}}
+        // @gen:payload
+    ])->assertCreated();
+
+    expect({{model_class}}::query()->count())->toBe(1);
+    $response->assertJsonPath('data.type', '{{resource_type}}');
+});
+
+it('{{names}}: без обязательных полей — 422', function (): void {
+    $this->postJson('{{test_uri}}', [])->assertUnprocessable();
+});
+{{/store}}
+{{#user}}
+{{#show}}
+
+it('{{names}}: чужая запись — 404', function (): void {
+    $foreign = {{model_class}}::factory()->create(['user_id' => $this->stranger->id]);
+
+    $this->getJson('{{test_uri}}/'.$foreign->{{key_column}})->assertNotFound();
+{{#update}}
+    $this->patchJson('{{test_uri}}/'.$foreign->{{key_column}}, [])->assertNotFound();
+{{/update}}
+{{#destroy}}
+    $this->deleteJson('{{test_uri}}/'.$foreign->{{key_column}})->assertNotFound();
+{{/destroy}}
+});
+{{/show}}
+{{/user}}
+{{#show}}
+
+it('{{names}}: своя запись читается', function (): void {
+    $item = {{model_class}}::factory(){{#user}}->create(['user_id' => $this->owner->id]){{/user}}{{^user}}->create(){{/user}};
+
+    $this->getJson('{{test_uri}}/'.$item->{{key_column}})->assertOk()->assertJsonPath('data.type', '{{resource_type}}');
+});
+{{/show}}
+{{#destroy}}
+
+it('{{names}}: удаляет запись', function (): void {
+    $item = {{model_class}}::factory(){{#user}}->create(['user_id' => $this->owner->id]){{/user}}{{^user}}->create(){{/user}};
+
+    $this->deleteJson('{{test_uri}}/'.$item->{{key_column}})->assertNoContent();
+});
+{{/destroy}}

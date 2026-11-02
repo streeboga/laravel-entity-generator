@@ -1,0 +1,66 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+use {{model_fqcn}};
+{{#builder}}
+use {{builder_fqcn}};
+{{/builder}}
+use Illuminate\Database\Eloquent\Collection;
+
+final class {{class}}
+{
+{{#builder}}
+    public function __construct(private readonly {{builder_class}} $queries) {}
+
+{{/builder}}
+    /** @return Collection<int, {{model_class}}> */
+{{#user}}
+    public function forOwner(int $ownerId): Collection
+    {
+{{#builder}}
+        return $this->queries->forOwner($ownerId);
+{{/builder}}
+{{^builder}}
+        return {{model_class}}::query()->where('user_id', $ownerId)->latest('id')->get();
+{{/builder}}
+    }
+{{/user}}
+{{^user}}
+    public function all(): Collection
+    {
+{{#builder}}
+        return $this->queries->latest();
+{{/builder}}
+{{^builder}}
+        return {{model_class}}::query()->latest('id')->get();
+{{/builder}}
+    }
+{{/user}}
+
+    public function find(string $key): ?{{model_class}}
+    {
+        return {{model_class}}::query()->where('{{key_column}}', $key)->first();
+    }
+
+    /** @param array<string, mixed> $attributes */
+    public function create(array $attributes): {{model_class}}
+    {
+        return {{model_class}}::query()->create($attributes);
+    }
+
+    /** @param array<string, mixed> $changes */
+    public function update({{model_class}} $item, array $changes): {{model_class}}
+    {
+        $item->update($changes);
+
+        return $item;
+    }
+
+    public function delete({{model_class}} $item): void
+    {
+        $item->delete();
+    }
+}

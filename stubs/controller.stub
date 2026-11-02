@@ -1,0 +1,134 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+use {{model_fqcn}};
+use {{resource_fqcn}};
+use {{service_fqcn}};
+{{#store}}
+use {{request_store_fqcn}};
+{{/store}}
+{{#update}}
+use {{request_update_fqcn}};
+{{/update}}
+{{#user}}
+use {{user_fqcn}};
+{{/user}}
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+{{#policy}}
+use Illuminate\Support\Facades\Gate;
+{{/policy}}
+use {{json_api_collection}};
+
+/** {{Names}}. */
+final readonly class {{class}}
+{
+    public function __construct(private {{service_class}} $items) {}
+{{#index}}
+
+    /** Список */
+{{#user}}
+    public function index(Request $request): JsonApiResourceCollection
+    {
+{{#policy}}
+        Gate::authorize('viewAny', {{model_class}}::class);
+
+{{/policy}}
+        return {{resource_class}}::collection($this->items->list($this->owner($request)));
+    }
+{{/user}}
+{{^user}}
+    public function index(): JsonApiResourceCollection
+    {
+{{#policy}}
+        Gate::authorize('viewAny', {{model_class}}::class);
+
+{{/policy}}
+        return {{resource_class}}::collection($this->items->list());
+    }
+{{/user}}
+{{/index}}
+{{#show}}
+
+    /** Одна запись */
+    public function show(string ${{route_param}}): {{resource_class}}
+    {
+        return {{resource_class}}::make($this->find(${{route_param}}, 'view'));
+    }
+{{/show}}
+{{#store}}
+
+    /** Создать */
+{{#user}}
+    public function store({{request_store_class}} $request): JsonResponse
+    {
+{{#policy}}
+        Gate::authorize('create', {{model_class}}::class);
+
+{{/policy}}
+        $item = $this->items->create($this->owner($request), $request->toDto());
+{{/user}}
+{{^user}}
+    public function store({{request_store_class}} $request): JsonResponse
+    {
+{{#policy}}
+        Gate::authorize('create', {{model_class}}::class);
+
+{{/policy}}
+        $item = $this->items->create($request->toDto());
+{{/user}}
+        $response = {{resource_class}}::make($item)->response()->setStatusCode(Response::HTTP_CREATED);
+{{#show}}
+        $response->header('Location', route('{{route_name_prefix}}{{route_name}}.show', ['{{route_param}}' => $item->{{key_column}}]));
+{{/show}}
+
+        return $response;
+    }
+{{/store}}
+{{#update}}
+
+    /** Изменить */
+    public function update({{request_update_class}} $request, string ${{route_param}}): {{resource_class}}
+    {
+        return {{resource_class}}::make($this->items->update($this->find(${{route_param}}, 'update'), $request->toDto()));
+    }
+{{/update}}
+{{#destroy}}
+
+    /** Удалить */
+    public function destroy(string ${{route_param}}): Response
+    {
+        $this->items->delete($this->find(${{route_param}}, 'delete'));
+
+        return response()->noContent();
+    }
+{{/destroy}}
+{{#user}}
+
+    private function owner(Request $request): {{user_class}}
+    {
+        $user = $request->user();
+        abort_if($user === null, 401);
+
+        return $user;
+    }
+{{/user}}
+
+    private function find(string $key, string $ability): {{model_class}}
+    {
+        $item = $this->items->find($key);
+        abort_if($item === null, 404);
+{{#policy}}
+        Gate::authorize($ability, $item);
+{{/policy}}
+{{^policy}}
+        unset($ability);
+{{/policy}}
+
+        return $item;
+    }
+}

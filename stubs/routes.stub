@@ -1,0 +1,17 @@
+Route::middleware([{{route_middleware}}])->prefix('{{route_prefix}}')->name('{{route_name_prefix}}')->group(function (): void {
+{{#index}}
+    Route::get('/{{route_segment}}', [\{{controller_fqcn}}::class, 'index'])->name('{{route_name}}.index');
+{{/index}}
+{{#show}}
+    Route::get('/{{route_segment}}/{{{route_param}}}', [\{{controller_fqcn}}::class, 'show'])->where('{{route_param}}', '{{route_where}}')->name('{{route_name}}.show');
+{{/show}}
+{{#store}}
+    Route::post('/{{route_segment}}', [\{{controller_fqcn}}::class, 'store'])->name('{{route_name}}.store');
+{{/store}}
+{{#update}}
+    Route::patch('/{{route_segment}}/{{{route_param}}}', [\{{controller_fqcn}}::class, 'update'])->where('{{route_param}}', '{{route_where}}')->name('{{route_name}}.update');
+{{/update}}
+{{#destroy}}
+    Route::delete('/{{route_segment}}/{{{route_param}}}', [\{{controller_fqcn}}::class, 'destroy'])->where('{{route_param}}', '{{route_where}}')->name('{{route_name}}.destroy');
+{{/destroy}}
+});

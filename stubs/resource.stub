@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+use {{model_fqcn}};
+use Illuminate\Http\Request;
+use {{json_api_resource}};
+
+/** @mixin {{model_class}} */
+final class {{class}} extends JsonApiResource
+{
+    public function toType(Request $request): string
+    {
+        return '{{resource_type}}';
+    }
+
+    /** @return array<string, mixed> */
+    public function toAttributes(Request $request): array
+    {
+        return [
+            {{attrs}}
+            // @gen:attrs
+            'created_at' => $this->created_at?->toIso8601String(),
+            'updated_at' => $this->updated_at?->toIso8601String(),
+        ];
+    }
+}

@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+use {{model_fqcn}};
+use {{user_fqcn}};
+use Illuminate\Auth\Access\Response;
+
+/** {{Name}}: {{#user}}видит и меняет владелец, чужое — 404.{{/user}}{{^user}}TODO: ограничить доступ — сейчас пускает любого аутентифицированного.{{/user}} */
+final class {{class}}
+{
+    public function viewAny({{user_class}} $user): Response
+    {
+        return Response::allow();
+    }
+
+    public function view({{user_class}} $user, {{model_class}} $item): Response
+    {
+        return $this->owns($user, $item);
+    }
+
+    public function create({{user_class}} $user): Response
+    {
+        return Response::allow();
+    }
+
+    public function update({{user_class}} $user, {{model_class}} $item): Response
+    {
+        return $this->owns($user, $item);
+    }
+
+    public function delete({{user_class}} $user, {{model_class}} $item): Response
+    {
+        return $this->owns($user, $item);
+    }
+
+    private function owns({{user_class}} $user, {{model_class}} $item): Response
+    {
+{{#user}}
+        return $item->user_id === $user->id ? Response::allow() : Response::denyAsNotFound();
+{{/user}}
+{{^user}}
+        return Response::allow();
+{{/user}}
+    }
+}

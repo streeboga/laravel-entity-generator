@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{namespace}};
+
+{{uses}}
+
+/** Данные для правки: {{Name}}. Не присланное — `null`, колонка не меняется. */
+final readonly class {{class}}
+{
+    public function __construct(
+        {{params}}
+        // @gen:params
+    ) {}
+
+    /** @return array<string, mixed> */
+    public function toChanges(): array
+    {
+        return [
+            {{changes}}
+            // @gen:changes
+        ];
+    }
+}
